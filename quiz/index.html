@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sequential Search — Quiz Pack (Timer + Restart)</title>
+<style>
+:root{
+  --bg:#0b1220; --card:#0f1724; --muted:#9aa4b2; --accent:#38bdf8; --accent2:#a855f7; --text:#e6eef6;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,'Helvetica Neue',Arial;background:linear-gradient(180deg,#020617 0%, #071026 60%);color:var(--text);padding:28px;}
+.container{max-width:1000px;margin:0 auto;}
+.header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.logo{font-size:22px;padding:8px 12px;border-radius:10px;background:linear-gradient(90deg,var(--accent2),var(--accent));color:#021017;font-weight:700}
+.title h1{margin:0;font-size:20px} .subtitle{color:var(--muted);font-size:13px;margin-top:4px}
+.card{background:linear-gradient(180deg, rgba(15,23,42,0.85), rgba(8,12,20,0.6));border:1px solid rgba(148,163,184,0.06);padding:18px;border-radius:14px;margin-bottom:16px}
+.tabs{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.tab{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.02);cursor:pointer;border:1px solid rgba(255,255,255,0.02)}
+.tab.active{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#021017;border-color:rgba(255,255,255,0.06)}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.btn{padding:8px 12px;border-radius:8px;border:none;cursor:pointer}
+.btn.primary{background:var(--accent);color:#021017}
+.btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text)}
+.q{margin:12px 0;padding:12px;border-radius:10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.02)}
+.options{display:flex;flex-direction:column;gap:8px}
+.option label{cursor:pointer}
+.result{padding:10px;border-radius:8px;margin-top:10px;font-weight:600}
+.correct{background:rgba(34,197,94,0.12);color:#86ffbf;border:1px solid rgba(34,197,94,0.18)}
+.wrong{background:rgba(251,113,133,0.08);color:#ffd6dc;border:1px solid rgba(251,113,133,0.12)}
+.small{font-size:13px;color:var(--muted)}
+.answer-key{margin-top:10px;padding:10px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted)}
+textarea{width:100%;min-height:80px;border-radius:8px;padding:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text)}
+.footer{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.hidden{display:none}
+#timerBox{
+  font-size:18px;font-weight:700;padding:10px;border-radius:8px;background:#1e293b;width:max-content;margin-bottom:10px;border:1px solid rgba(255,255,255,0.06)
+}
+#restartBtn{display:none;padding:8px 12px;border-radius:8px;background:var(--accent);color:#021017;font-weight:700;cursor:pointer;margin-left:12px}
+.disabled{opacity:0.5;pointer-events:none}
+@media(max-width:700px){.header{flex-direction:column;align-items:flex-start}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">🔍 Sequential Search — Quiz Pack</div>
+    <div class="title">
+      <h1>All three quiz modes — Mixed / MCQ-only / Short-only</h1>
+      <div class="subtitle">Questions based on the Sequential (Linear) Search lecture. (source material)</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="small">Source: lecture HTML file uploaded by user. For reference: the lecture content (definitions, examples, complexity, Python OOP code) was used to create these questions.</div>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div id="timerBox">Timer: 60s</div>
+      <button id="restartBtn" class="btn" onclick="restartTimer()">🔄 Restart Timer</button>
+    </div>
+
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-target="mixed">Mixed Quiz — MCQs + Short</div>
+      <div class="tab" data-target="mcq">MCQ Only — 30 Questions</div>
+      <div class="tab" data-target="short">Short Questions Only — 20</div>
+    </div>
+
+    <!-- MIXED QUIZ -->
+    <div id="mixed" class="panel">
+      <div class="section-title"><h3>Mixed Quiz — 20 MCQs + 10 Short Questions</h3><div class="small">Auto-check for MCQs. Short answers: show model answers.</div></div>
+      <div id="mixed-mcqs"></div>
+      <div class="footer" style="margin-top:8px">
+        <button class="btn primary" onclick="checkAnswers('mixed')">Check MCQ Answers</button>
+        <div id="mixed-score" class="small"></div>
+      </div>
+
+      <hr style="margin:14px 0;border:none;border-top:1px dashed rgba(255,255,255,0.04)">
+
+      <div class="section-title"><h3>Mixed — Short Questions (10)</h3><div class="small">Students type answers; click "Show Model Answers".</div></div>
+      <div id="mixed-short"></div>
+      <div class="footer">
+        <button class="btn ghost" onclick="showShortAnswers('mixed')">Show Model Answers</button>
+        <div class="small">Model answers appear below each question.</div>
+      </div>
+    </div>
+
+    <!-- MCQ ONLY -->
+    <div id="mcq" class="panel hidden">
+      <div class="section-title"><h3>MCQ-only — 30 Questions</h3><div class="small">Auto-check enabled.</div></div>
+      <div id="mcq-only"></div>
+      <div class="footer">
+        <button class="btn primary" onclick="checkAnswers('mcq')">Check Answers</button>
+        <div id="mcq-score" class="small"></div>
+      </div>
+    </div>
+
+    <!-- SHORT ONLY -->
+    <div id="short" class="panel hidden">
+      <div class="section-title"><h3>Short Questions — 20 (Teacher-style)</h3><div class="small">Model answers hidden until requested.</div></div>
+      <div id="short-only"></div>
+      <div class="footer">
+        <button class="btn ghost" onclick="showShortAnswers('short')">Show Model Answers</button>
+        <div class="small">Use this for written practice or exam paper generation.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="small" style="margin-top:10px">You can print this page or save the HTML file for offline use.</div>
+</div>
+
+<script>
+// Questions data (derived from lecture content)
+const mcqs_mixed = [
+  {q:"What is Sequential (Linear) Search?", a:["A search that checks elements one by one","A search requiring sorted data only","A search using divide and conquer","A search using hashing"], key:0},
+  {q:"Best case time complexity of sequential search is:", a:["O(n)","O(log n)","O(1)","O(n log n)"], key:2},
+  {q:"Worst case time complexity of sequential search is:", a:["O(1)","O(n)","O(log n)","O(n^2)"], key:1},
+  {q:"Sequential search is especially used when:", a:["Data is sorted and random-access","Data is not sorted or is in a linked list","We need logarithmic time","We use binary trees"], key:1},
+  {q:"If target is at index 0, sequential search:", a:["Never finds it","Finds in O(n) time","Finds in O(1) time","Finds in O(log n) time"], key:2},
+  {q:"In the given array A=[15, 8, 23, 42, 4, 33], the index of 23 (0-based) is:", a:["1","2","3","4"], key:1},
+  {q:"If element is not present, sequential search:", a:["Returns 'not found' after checking all elements","Immediately returns error","Returns wrong index 0","Performs binary split"], key:0},
+  {q:"Sequential search on a linked list is:", a:["Impossible","Efficient random access","Node-by-node traversal","O(1) searching"], key:2},
+  {q:"Average-case complexity of sequential search is:", a:["O(1)","O(n)","O(log n)","O(n^2)"], key:1},
+  {q:"Which of the following is NOT a reason to use sequential search?", a:["Data size is tiny","Data is unsorted","You require O(log n) time","Data structure is linked list"], key:2},
+  {q:"Which statement about sequential search is TRUE?", a:["It needs sorted data","It always uses extra memory","It checks elements in order","It uses recursion only"], key:2},
+  {q:"Sequential search would be used over binary search when:", a:["Data is sorted","Data is unsorted","You want faster time","You have random access"], key:1},
+  {q:"What does the provided Python OOP method return when element found?", a:["Index and a message","Only True/False","Raises exception","Nothing"], key:0},
+  {q:"In the example code, what is stored in self.data?", a:["Search target only","The entire array passed to __init__","Only length of array","Index of found element"], key:1},
+  {q:"Which is an analogy used to explain sequential search?", a:["Binary search in a phonebook","Searching roll number in a pile of papers one by one","Jumping to middle element","Sorting a list first"], key:1},
+  {q:"If data is very large and unsorted, sequential search is:", a:["Very fast","Inefficient (slow)","Always optimal","Impossible"], key:1},
+  {q:"Sequential search checks elements:", a:["From end to start only","In random order","From start to end (order)","By using keys only"], key:2},
+  {q:"Which data structure prevents direct index jumps and often uses sequential search?", a:["Array","Hash table","Linked list","Binary search tree"], key:2},
+  {q:"If you want to search small menu items or forms, sequential search is:", a:["Appropriate and simple","Never useful","Too slow always","Requires sorting first"], key:0},
+  {q:"Which case gives O(1) time for sequential search?", a:["Target at last index","Target not present","Target at first index","Array length zero"], key:2}
+];
+
+// additional MCQs to reach 30 for MCQ-only
+const mcqs_extra = [
+  {q:"Sequential search is also called:", a:["Binary search","Linear search","Hash search","Exponential search"], key:1},
+  {q:"For which of these is sequential search the only option among given choices?", a:["Searching in sorted array","Searching in linked list without index access","Binary searching","Using indexed DB"], key:1},
+  {q:"When target is at last position, sequential search does:", a:["Best case","Average case","Worst case","Constant time"], key:2},
+  {q:"Which of these improves performance over sequential search on sorted data?", a:["Linear probing","Binary search","Brute force","Sequential probing"], key:1},
+  {q:"What is returned by search() in the sample Python OOP when not found?", a:[`"not found" message`,`Index -1`,`Raises ValueError`,`None`], key:0},
+  {q:"Sequential search requires which of following extra structures?", a:["A heap","No extra structure (in-place)","A balanced tree","Hash table"], key:1},
+  {q:"Which real-life example was used in the lecture?", a:["Searching Biryani in Food Panda menu","Searching roll number in pile of exam papers","Searching for a word in a dictionary using binary rules","Searching using indexes"], key:1},
+  {q:"Sequential search complexity is linear in:", a:["log n","n","n log n","sqrt(n)"], key:1},
+  {q:"Why sequential search is simple to implement?", a:["Because it uses random jumps","Because it checks one element at a time in order","Because it requires sorting","Because it uses recursion heavily"], key:1},
+  {q:"Which is FALSE about sequential search?", a:["Works on arrays","Works on linked lists","Always faster than binary search on sorted data","Simple to implement"], key:2}
+];
+
+const short_mixed = [
+  {q:"Define sequential (linear) search in one sentence.", a:"Checking each element one-by-one from start to end until the target is found."},
+  {q:"Give one real-life analogy used to explain sequential search.", a:"Searching a roll number in a physical stack of exam papers from top to bottom."},
+  {q:"State the worst-case time complexity of sequential search.", a:"O(n) — when target is at the end or not present."},
+  {q:"When is sequential search preferred over binary search? (one reason)", a:"When data is not sorted or is stored in a linked list with no random access."},
+  {q:"What is the best-case scenario for sequential search?", a:"When the target is the first element — O(1)."},
+  {q:"Name one data structure where sequential search is commonly used.", a:"Linked list."},
+  {q:"In the sample Python OOP, what does search() return when it finds the element?", a:"A message like 'Found {target} at index {index}'."},
+  {q:"Give a short reason why sequential search is slow for large datasets.", a:"Because it may need to examine every element, so time grows linearly with n."},
+  {q:"List one situation where sequential search is acceptable.", a:"Searching a small menu, a short list, or an unsorted small dataset."},
+  {q:"What does average-case complexity mean for sequential search?", a:"On average it inspects about n/2 elements, so complexity is O(n)."}];
+
+const short_extra = [
+  {q:"Explain in short how sequential search works on a linked list.", a:"Start at head and traverse node by node comparing each node's value with the target until found or end reached."},
+  {q:"Write the Python OOP class name used in the lecture sample.", a:"SequentialSearch"},
+  {q:"What should search() return if target not found in sample code?", a:"A message like '{target} not found'."},
+  {q:"Why can't binary search be used directly on linked lists efficiently?", a:"Because linked lists lack O(1) random access to middle elements required by binary search."},
+  {q:"Give one optimization idea to avoid full scans when possible.", a:"Keep data indexed or use hashing / maintain sorted order for binary search."},
+  {q:"Mention one 'real-use' of sequential search from the lecture.", a:"Searching a contact number in a simple list or attendance list."},
+  {q:"State one limitation of sequential search.", a:"Poor scalability for large unsorted datasets."},
+  {q:"How does sequential search behave if there are duplicate target values?", a:"It finds the first occurrence (first index) when implemented left-to-right."},
+  {q:"Give an example array and show index of 42 (0-based): A=[15,8,23,42,4,33].", a:"Index of 42 is 3."},
+  {q:"What is the main difference between sequential and binary search?", a:"Binary search requires sorted data and is faster (O(log n)), sequential works on unsorted data but is O(n)."}
+];
+
+// populate panels
+function createMCQBlock(item, idx, namePrefix){
+  const div = document.createElement('div'); div.className='q';
+  const h = document.createElement('h4'); h.innerText = (idx+1)+'. '+item.q; div.appendChild(h);
+  const opts = document.createElement('div'); opts.className='options';
+  item.a.forEach((opt,i)=>{
+    const label = document.createElement('label'); label.className='option';
+    label.innerHTML = `<input type="radio" name="${namePrefix}-q${idx}" value="${i}"> ${String.fromCharCode(65+i)}. ${opt}`;
+    opts.appendChild(label);
+  });
+  div.appendChild(opts);
+  return div;
+}
+
+function init(){
+  // Mixed MCQs (20 from mcqs_mixed)
+  const mixedDiv = document.getElementById('mixed-mcqs');
+  mcqs_mixed.forEach((m, i)=> mixedDiv.appendChild(createMCQBlock(m,i,'mixed')));
+
+  // Mixed short (10)
+  const mixedShortDiv = document.getElementById('mixed-short');
+  short_mixed.forEach((s,i)=>{
+    const d = document.createElement('div'); d.className='q';
+    d.innerHTML = `<h4>${i+1}. ${s.q}</h4><textarea id="mixed-short-${i}" placeholder="Type answer..."></textarea>
+      <div class="answer-key hidden" id="mixed-short-ans-${i}"><strong>Model answer:</strong> ${s.a}</div>`;
+    mixedShortDiv.appendChild(d);
+  });
+
+  // MCQ-only (30)
+  const mcqOnlyDiv = document.getElementById('mcq-only');
+  mcqs_mixed.concat(mcqs_extra).forEach((m,i)=> mcqOnlyDiv.appendChild(createMCQBlock(m,i,'mcq')));
+
+  // Short-only (20)
+  const shortOnlyDiv = document.getElementById('short-only');
+  short_mixed.concat(short_extra).forEach((s,i)=>{
+    const d = document.createElement('div'); d.className='q';
+    d.innerHTML = `<h4>${i+1}. ${s.q}</h4><textarea id="short-only-${i}" placeholder="Type answer..."></textarea>
+      <div class="answer-key hidden" id="short-only-ans-${i}"><strong>Model answer:</strong> ${s.a}</div>`;
+    shortOnlyDiv.appendChild(d);
+  });
+}
+
+init();
+
+// check answers function
+function checkAnswers(mode){
+  let arr = (mode==='mcq') ? mcqs_mixed.concat(mcqs_extra) : mcqs_mixed;
+  let correct=0, total=arr.length;
+  arr.forEach((item,i)=>{
+    const name = `${mode}-q${i}`;
+    const radios = document.getElementsByName(name);
+    let selected = -1;
+    for(let r of radios){ if(r.checked) selected = parseInt(r.value); }
+    const container = radios.length? radios[0].closest('.options').parentElement : null;
+    if(container){
+      container.classList.remove('correct','wrong');
+      if(selected===item.key){ correct++; container.classList.add('correct'); }
+      else { container.classList.add('wrong'); }
+    }
+  });
+  const scoreEl = document.getElementById(mode==='mcq'?'mcq-score':'mixed-score');
+  if(scoreEl) scoreEl.innerText = `Score: ${correct} / ${total}`;
+}
+
+// show short answers
+function showShortAnswers(which){
+  if(which==='mixed'){
+    short_mixed.forEach((s,i)=> document.getElementById(`mixed-short-ans-${i}`).classList.remove('hidden'));
+  } else {
+    const total = short_mixed.concat(short_extra).length;
+    for(let i=0;i<total;i++) document.getElementById(`short-only-ans-${i}`).classList.remove('hidden');
+  }
+}
+
+// -------- TIMER --------
+let timer;
+// changed initial time to 60 seconds
+let timeLeft = 60;
+
+function startTimer(){
+  clearInterval(timer);
+  // set timer to 60 seconds on start
+  timeLeft = 60;
+  document.getElementById("restartBtn").style.display = "none";
+  document.getElementById("timerBox").innerText = "Timer: " + timeLeft + "s";
+
+  timer = setInterval(()=>{
+    timeLeft--;
+    document.getElementById("timerBox").innerText = "Timer: " + timeLeft + "s";
+
+    if(timeLeft <= 0){
+      clearInterval(timer);
+      disableAllMCQs();
+      document.getElementById("timerBox").innerText = "⛔ Time's up!";
+      document.getElementById("restartBtn").style.display = "inline-block";
+    }
+  },1000);
+}
+
+function disableAllMCQs(){
+  document.querySelectorAll("input[type='radio']").forEach(r => r.disabled = true);
+  document.querySelectorAll(".options").forEach(o => o.classList.add("disabled"));
+}
+
+function enableAllMCQs(){
+  document.querySelectorAll("input[type='radio']").forEach(r => r.disabled = false);
+  document.querySelectorAll(".options").forEach(o => o.classList.remove("disabled"));
+}
+
+function restartTimer(){
+  enableAllMCQs();
+  startTimer();
+}
+
+// tabs
+document.querySelectorAll('.tab').forEach(t=> t.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  const target = t.getAttribute('data-target');
+  document.querySelectorAll('.panel').forEach(p=> p.classList.add('hidden'));
+  document.getElementById(target).classList.remove('hidden');
+  if(target==="mixed" || target==="mcq"){
+    enableAllMCQs();
+    startTimer();
+  } else {
+    clearInterval(timer);
+    document.getElementById("timerBox").innerText = "Timer: — (Short questions only)";
+    document.getElementById("restartBtn").style.display = "none";
+  }
+}));
+</script>
+</body>
+</html>
